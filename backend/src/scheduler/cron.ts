@@ -16,10 +16,10 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Sync all active users every 6 hours
- * Cron expression: "0 */6 * * *" = every 6 hours at minute 0
- */
+// /**
+//  * Sync all active users every 6 hours
+//  * Cron expression: "0 */6 * * *" = every 6 hours at minute 0
+//  */
 async function syncAllUsers(): Promise<void> {
   const startTime = Date.now();
   logger.info('Starting scheduled sync job for all users');
