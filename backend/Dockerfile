@@ -7,7 +7,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install ALL dependencies (needed for build)
-RUN npm ci
+RUN npm install
 
 # Copy source files
 COPY src ./src
@@ -23,4 +23,3 @@ EXPOSE 4000
 
 # Start server
 CMD ["node", "dist/server.js"]
-
