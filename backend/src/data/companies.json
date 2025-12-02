@@ -1,0 +1,26 @@
+[
+  { "company": "TechNova", "role": "Backend Developer", "skills": ["node.js", "express", "typescript", "mongodb", "docker", "aws"] },
+  { "company": "CloudForge", "role": "Backend Developer", "skills": ["node.js", "nestjs", "postgresql", "redis", "docker", "kubernetes"] },
+  { "company": "DataCraft", "role": "Data Engineer", "skills": ["python", "sql", "airflow", "spark", "aws", "kafka"] },
+  { "company": "Frontify", "role": "Frontend Engineer", "skills": ["react", "typescript", "next.js", "tailwindcss", "jest"] },
+  { "company": "MobileWave", "role": "Fullstack Developer", "skills": ["react", "node.js", "mongodb", "graphql", "docker"] },
+  { "company": "FinEdge", "role": "Backend Developer", "skills": ["java", "spring", "postgresql", "kafka", "aws"] },
+  { "company": "SecureStack", "role": "Backend Developer", "skills": ["node.js", "express", "postgresql", "redis", "oauth", "jwt"] },
+  { "company": "ScaleUp Labs", "role": "Platform Engineer", "skills": ["go", "kubernetes", "docker", "prometheus", "grafana", "aws"] },
+  { "company": "Productive", "role": "Fullstack Developer", "skills": ["react", "node.js", "typescript", "prisma", "postgresql"] },
+  { "company": "InsightX", "role": "Data Engineer", "skills": ["python", "pandas", "sql", "snowflake", "dbt"] },
+  { "company": "RetailSphere", "role": "Backend Developer", "skills": ["c#", ".net", "sql server", "azure"] },
+  { "company": "MediaFlow", "role": "Backend Developer", "skills": ["node.js", "express", "redis", "rabbitmq", "mongodb"] },
+  { "company": "HealthSync", "role": "Fullstack Developer", "skills": ["react", "node.js", "graphql", "postgresql", "docker"] },
+  { "company": "EduVerse", "role": "Frontend Engineer", "skills": ["react", "typescript", "redux", "testing-library"] },
+  { "company": "LogiChain", "role": "Backend Developer", "skills": ["java", "spring boot", "kafka", "postgresql", "docker"] },
+  { "company": "NeoBank", "role": "Backend Developer", "skills": ["node.js", "nestjs", "postgresql", "event sourcing", "aws"] },
+  { "company": "VisionAI", "role": "ML Engineer", "skills": ["python", "pytorch", "tensorflow", "mlops", "docker"] },
+  { "company": "Streamline", "role": "Backend Developer", "skills": ["go", "grpc", "kubernetes", "postgresql"] },
+  { "company": "StudioOne", "role": "Fullstack Developer", "skills": ["next.js", "react", "node.js", "mongodb", "tailwindcss"] },
+  { "company": "OpsGuard", "role": "SRE", "skills": ["kubernetes", "prometheus", "grafana", "terraform", "aws"] },
+  { "company": "PayQuick", "role": "Backend Developer", "skills": ["node.js", "express", "postgresql", "stripe", "aws"] },
+  { "company": "ChainSecure", "role": "Backend Developer", "skills": ["node.js", "solidity", "web3", "postgresql"] }
+]
+
+
