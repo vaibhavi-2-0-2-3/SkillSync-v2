@@ -7,25 +7,27 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "cron:refresh": "ts-node scripts/cron-refresh.ts"
+    "cron:refresh": "node dist/scripts/cron-refresh.js"
   },
   "dependencies": {
     "axios": "^1.7.7",
-    "compression": "^1.7.4",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "express-rate-limit": "^7.1.5",
     "helmet": "^8.0.0",
     "mongoose": "^8.8.0",
-    "morgan": "^1.10.0",
+    "morgan": "^1.10.1",
     "node-cron": "^3.0.3",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1"
   },
   "devDependencies": {
     "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^22.7.4",
     "@types/node-cron": "^3.0.11",
     "ts-node": "^10.9.2",

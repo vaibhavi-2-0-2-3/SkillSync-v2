@@ -20,6 +20,12 @@ services:
         sync: false
       - key: GITHUB_DEFAULT_REDIRECT_URL
         sync: false
+      - key: FRONTEND_URL_PROD
+        value: https://skill-sync-v2-bay.vercel.app
+      - key: BACKEND_URL_PROD
+        value: https://skillsync-api.onrender.com
+      - key: GITHUB_CALLBACK_URL_PROD
+        value: https://skillsync-api.onrender.com/api/auth/github/callback
       - key: LEETCODE_API_BASE_URL
         value: https://leetcode-stats-api.herokuapp.com
       - key: ENABLE_CRON

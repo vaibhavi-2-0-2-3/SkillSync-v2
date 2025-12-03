@@ -96,14 +96,27 @@ SkillSync is a full-stack MERN application that analyzes developer profiles acro
 
    **Backend `.env` variables:**
    ```env
-   PORT=4000
    NODE_ENV=development
-   MONGODB_URI=mongodb://localhost:27017/skillsync
+   PORT=4000
+
+   # Local + production database URIs
+   MONGODB_URI_LOCAL=mongodb://localhost:27017/skillsync
+   # MONGODB_URI_PROD=<render_connection_string>
+
+   # GitHub OAuth
    GITHUB_CLIENT_ID=your_github_client_id
    GITHUB_CLIENT_SECRET=your_github_client_secret
-   GITHUB_CALLBACK_URL=http://localhost:4000/api/auth/github/callback
-   GITHUB_DEFAULT_REDIRECT_URL=http://localhost:5173
+   GITHUB_CALLBACK_URL_LOCAL=http://localhost:4000/api/auth/github/callback
+   GITHUB_CALLBACK_URL_PROD=https://skillsync-api.onrender.com/api/auth/github/callback
+
+   # Frontend/Backend URLs
+   FRONTEND_URL_LOCAL=http://localhost:5173
+   FRONTEND_URL_PROD=https://skill-sync-v2-bay.vercel.app
+   BACKEND_URL_PROD=https://skillsync-api.onrender.com
+
    LEETCODE_API_BASE_URL=https://leetcode-stats-api.herokuapp.com
+
+   # Run cron jobs locally, disable on Render (use Scheduled Jobs)
    ENABLE_CRON=true
    ```
 
@@ -144,8 +157,9 @@ SkillSync is a full-stack MERN application that analyzes developer profiles acro
    - `MONGODB_URI`
    - `GITHUB_CLIENT_ID`
    - `GITHUB_CLIENT_SECRET`
-   - `GITHUB_CALLBACK_URL` (your production URL)
-   - `GITHUB_DEFAULT_REDIRECT_URL` (your Vercel frontend URL)
+   - `GITHUB_CALLBACK_URL_PROD` (production callback URL)
+   - `FRONTEND_URL_PROD` (Vercel frontend URL)
+   - `BACKEND_URL_PROD` (Render backend URL)
    - `ENABLE_CRON=false` (Render Scheduled Jobs handle cron)
 
 4. **Create Scheduled Job** in Render:

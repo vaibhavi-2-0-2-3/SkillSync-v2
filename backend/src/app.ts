@@ -13,6 +13,7 @@ import analysisRoutes from './routes/analysis.routes';
 import aiRoutes from './routes/ai.routes';
 import companyRoutes from './routes/company.routes';
 import refreshRoutes from './routes/refresh.routes';
+import { logger } from './utils/logger';
 
 const app = express();
 
@@ -23,12 +24,12 @@ app.use(helmet({
 }));
 
 // CORS configuration
-app.use(cors({
-  origin: env.nodeEnv === 'production'
-    ? process.env.FRONTEND_URL || 'https://skillsync.vercel.app'
-    : ['http://localhost:5173', 'http://localhost:3000'],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: env.isProduction ? env.frontendUrl : env.devCorsOrigins,
+    credentials: true
+  })
+);
 
 // Compression
 app.use(compression());
@@ -48,11 +49,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging
-if (env.nodeEnv === 'production') {
-  app.use(morgan('combined'));
-} else {
-  app.use(morgan('dev'));
-}
+app.use(morgan(env.isProduction ? 'combined' : 'dev'));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
@@ -70,15 +67,14 @@ app.use('/api/refresh', refreshRoutes);
 // Error handling middleware
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  const logger = require('./utils/logger').logger;
   logger.error('Express error handler', {
     error: err.message,
-    stack: env.nodeEnv === 'development' ? err.stack : undefined
+    stack: env.isProduction ? undefined : err.stack
   });
 
   res.status(err.status || 500).json({
-    error: env.nodeEnv === 'production' ? 'Internal server error' : err.message,
-    ...(env.nodeEnv === 'development' && { stack: err.stack })
+    error: env.isProduction ? 'Internal server error' : err.message,
+    ...(env.isProduction ? {} : { stack: err.stack })
   });
 });
 

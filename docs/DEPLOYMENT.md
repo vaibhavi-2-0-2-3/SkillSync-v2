@@ -37,6 +37,7 @@ This guide covers deploying SkillSync to production using **Vercel** (frontend) 
 ### Step 1: Prepare Repository
 
 Ensure your repository has:
+
 - `backend/Dockerfile`
 - `backend/render.yaml`
 - `backend/package.json` with build scripts
@@ -63,17 +64,18 @@ PORT=4000
 MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/skillsync
 GITHUB_CLIENT_ID=your_github_oauth_client_id
 GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
-GITHUB_CALLBACK_URL=https://skillsync-api.onrender.com/api/auth/github/callback
-GITHUB_DEFAULT_REDIRECT_URL=https://your-frontend.vercel.app
+GITHUB_CALLBACK_URL_PROD=https://skillsync-api.onrender.com/api/auth/github/callback
+FRONTEND_URL_PROD=https://skill-sync-v2-bay.vercel.app
+BACKEND_URL_PROD=https://skillsync-api.onrender.com
 LEETCODE_API_BASE_URL=https://leetcode-stats-api.herokuapp.com
 ENABLE_CRON=false
-FRONTEND_URL=https://your-frontend.vercel.app
 ```
 
 **Important Notes:**
+
 - `ENABLE_CRON=false` - Disables node-cron (Render Scheduled Jobs handle it)
-- `GITHUB_CALLBACK_URL` - Must match your GitHub OAuth app settings
-- `GITHUB_DEFAULT_REDIRECT_URL` - Your Vercel frontend URL
+- `GITHUB_CALLBACK_URL_PROD` - Must match your GitHub OAuth app settings
+- `FRONTEND_URL_PROD` - Your Vercel frontend URL (used for redirects)
 
 ### Step 4: Create MongoDB Database (Optional)
 
@@ -88,7 +90,7 @@ If not using MongoDB Atlas:
 2. **Configure**:
    - **Name**: `skillsync-cron-refresh`
    - **Schedule**: `0 */6 * * *` (every 6 hours)
-   - **Command**: `cd backend && npm install && npm run cron:refresh`
+   - **Command**: `cd backend && npm install && npm run build && npm run cron:refresh`
    - **Environment Variables**: Same as Web Service (especially `MONGODB_URI`)
 
 ### Step 6: Verify Deployment
@@ -102,6 +104,7 @@ If not using MongoDB Atlas:
 ### Step 1: Prepare Repository
 
 Ensure your repository has:
+
 - `frontend/vercel.json`
 - `frontend/package.json` with build script
 - All source files in `frontend/src/`
@@ -146,11 +149,13 @@ Update your GitHub OAuth App settings:
 ### API Routing
 
 **Development:**
+
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:4000`
 - Vite proxy rewrites `/api/*` → `http://localhost:4000/api/*`
 
 **Production:**
+
 - Frontend: `https://your-frontend.vercel.app`
 - Backend: `https://your-api.onrender.com`
 - `vercel.json` rewrites `/api/*` → `https://your-api.onrender.com/api/*`
@@ -161,22 +166,24 @@ Update your GitHub OAuth App settings:
 Backend `app.ts` includes CORS:
 
 ```typescript
-app.use(cors({
-  origin: env.nodeEnv === 'production'
-    ? process.env.FRONTEND_URL || 'https://your-frontend.vercel.app'
-    : ['http://localhost:5173'],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: env.isProduction ? env.frontendUrl : env.devCorsOrigins,
+    credentials: true,
+  })
+);
 ```
 
 ## Cron Jobs: Render Scheduled Jobs vs node-cron
 
 ### Local Development
+
 - Uses `node-cron` (enabled with `ENABLE_CRON=true`)
 - Runs inside Express server process
 - Defined in `backend/src/scheduler/cron.ts`
 
 ### Production (Render)
+
 - Uses **Render Scheduled Jobs** (standalone script)
 - Runs independently of web service
 - Script: `backend/scripts/cron-refresh.ts`
@@ -184,6 +191,7 @@ app.use(cors({
 - Schedule: `0 */6 * * *` (every 6 hours)
 
 **Why?**
+
 - Render Scheduled Jobs are more reliable for long-running tasks
 - No risk of cron jobs interfering with web service
 - Better resource isolation
@@ -192,16 +200,19 @@ app.use(cors({
 ## Monitoring & Logs
 
 ### Render
+
 - **Web Service Logs**: Dashboard → Service → Logs
 - **Scheduled Job Logs**: Dashboard → Scheduled Job → Logs
 - **Metrics**: CPU, Memory, Request count
 
 ### Vercel
+
 - **Deployment Logs**: Dashboard → Deployment → Logs
 - **Analytics**: Real-time visitor metrics
 - **Function Logs**: Serverless function execution logs
 
 ### Backend Logging (Winston)
+
 - **Production**: Logs to `logs/combined-YYYY-MM-DD.log` and `logs/error-YYYY-MM-DD.log`
 - **Daily rotation**: Logs rotate daily, kept for 14-30 days
 - **Console**: Also logs to console for Render dashboard visibility
@@ -211,42 +222,50 @@ app.use(cors({
 ### Backend Issues
 
 **Problem**: Build fails
+
 - **Solution**: Check `backend/package.json` scripts, ensure TypeScript compiles
 
 **Problem**: MongoDB connection fails
+
 - **Solution**: Verify `MONGODB_URI` is correct, check MongoDB Atlas IP whitelist
 
 **Problem**: Cron job not running
+
 - **Solution**: Check Render Scheduled Job logs, verify `MONGODB_URI` is set
 
 ### Frontend Issues
 
 **Problem**: API calls fail (CORS error)
-- **Solution**: Verify `FRONTEND_URL` in backend env vars matches Vercel URL
+
+- **Solution**: Verify `FRONTEND_URL_PROD` (or `FRONTEND_URL`) in backend env vars matches your Vercel URL
 
 **Problem**: API calls go to wrong URL
+
 - **Solution**: Check `VITE_BACKEND_URL` in Vercel environment variables
 
 **Problem**: Build fails
+
 - **Solution**: Check Vercel build logs, ensure all dependencies are in `package.json`
 
 ## Environment Variables Summary
 
 ### Backend (Render)
+
 ```env
 NODE_ENV=production
 PORT=4000
 MONGODB_URI=...
 GITHUB_CLIENT_ID=...
 GITHUB_CLIENT_SECRET=...
-GITHUB_CALLBACK_URL=...
-GITHUB_DEFAULT_REDIRECT_URL=...
+GITHUB_CALLBACK_URL_PROD=https://skillsync-api.onrender.com/api/auth/github/callback
+FRONTEND_URL_PROD=https://skill-sync-v2-bay.vercel.app
+BACKEND_URL_PROD=https://skillsync-api.onrender.com
 LEETCODE_API_BASE_URL=...
 ENABLE_CRON=false
-FRONTEND_URL=...
 ```
 
 ### Frontend (Vercel)
+
 ```env
 VITE_BACKEND_URL=https://your-api.onrender.com
 ```
@@ -254,15 +273,18 @@ VITE_BACKEND_URL=https://your-api.onrender.com
 ## Cost Estimation
 
 ### Render (Starter Plan)
+
 - **Web Service**: $7/month
 - **Scheduled Job**: Free (included)
 - **MongoDB**: Free (or use Atlas free tier)
 
 ### Vercel
+
 - **Hobby Plan**: Free (unlimited deployments)
 - **Bandwidth**: Generous free tier
 
 ### Total
+
 - **~$7/month** for full production deployment
 
 ## Next Steps
@@ -278,4 +300,3 @@ VITE_BACKEND_URL=https://your-api.onrender.com
 ---
 
 **Your SkillSync app is now live in production! 🚀**
-

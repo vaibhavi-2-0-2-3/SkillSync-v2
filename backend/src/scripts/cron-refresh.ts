@@ -1,14 +1,5 @@
-/**
- * Standalone cron script for Render Scheduled Jobs
- * This script runs independently of the Express server
- * Usage: npm run cron:refresh
- */
-
-import dotenv from 'dotenv';
-dotenv.config();
-
 import mongoose from 'mongoose';
-import { User, IUser } from '../src/models/User';
+import { User, IUser } from '../models/User';
 import {
   syncUserGitHub,
   syncUserLeetCode,
@@ -16,9 +7,9 @@ import {
   refreshDeveloperAnalysis,
   refreshAIInsights,
   refreshCompanyMatches
-} from '../src/services/sync.service';
-import { logger } from '../src/utils/logger';
-import { env } from '../src/config/env';
+} from '../services/sync.service';
+import { logger } from '../utils/logger';
+import { env } from '../config/env';
 
 const SYNC_DELAY_MS = 500;
 
@@ -31,11 +22,9 @@ async function runCronRefresh(): Promise<void> {
   logger.info('Starting standalone cron refresh job');
 
   try {
-    // Connect to MongoDB
     await mongoose.connect(env.mongodbUri);
     logger.info('Connected to MongoDB');
 
-    // Find all active users
     const users = await User.find({
       $or: [
         { githubAccessToken: { $exists: true, $ne: null } },
@@ -54,9 +43,11 @@ async function runCronRefresh(): Promise<void> {
       const userId = String(user._id);
 
       try {
-        logger.info(`Syncing user ${i + 1}/${users.length}`, { userId, githubUsername: user.githubUsername });
+        logger.info(`Syncing user ${i + 1}/${users.length}`, {
+          userId,
+          githubUsername: user.githubUsername
+        });
 
-        // Sync data sources
         await syncUserGitHub(user);
         await sleep(SYNC_DELAY_MS);
 
@@ -66,28 +57,24 @@ async function runCronRefresh(): Promise<void> {
         await syncUserLinkedIn(user);
         await sleep(SYNC_DELAY_MS);
 
-        // Refresh analysis
         await refreshDeveloperAnalysis(user);
         await sleep(SYNC_DELAY_MS);
 
-        // Refresh AI insights (use existing role or default)
         const role = (user.aiInsights as any)?.role || 'Software Engineer';
         await refreshAIInsights(user, role);
         await sleep(SYNC_DELAY_MS);
 
-        // Refresh company matches
         await refreshCompanyMatches(user);
         await sleep(SYNC_DELAY_MS);
 
         successCount++;
-        logger.info(`User sync completed`, { userId });
+        logger.info('User sync completed', { userId });
       } catch (error) {
         errorCount++;
-        logger.error(`User sync failed`, {
+        logger.error('User sync failed', {
           userId,
           error: error instanceof Error ? error.message : String(error)
         });
-        // Continue with next user even if one fails
       }
     }
 
@@ -104,14 +91,12 @@ async function runCronRefresh(): Promise<void> {
     });
     process.exit(1);
   } finally {
-    // Close MongoDB connection
     await mongoose.connection.close();
     logger.info('MongoDB connection closed');
     process.exit(0);
   }
 }
 
-// Run the script
 runCronRefresh().catch((error) => {
   logger.error('Fatal error in cron refresh script', {
     error: error instanceof Error ? error.message : String(error)

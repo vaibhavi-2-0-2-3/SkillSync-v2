@@ -1,4 +1,4 @@
-import { IUser, User } from '../models/User';
+import { IUser } from '../models/User';
 import { DeveloperAnalysis } from './analysis.service';
 
 export interface AIEngineOutput {
@@ -99,7 +99,7 @@ export async function generateAndPersistAIInsights(
   };
 
   user.aiInsights = insights;
-  await (user as User).save();
+  await user.save();
 
   return insights;
 }

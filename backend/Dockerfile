@@ -15,7 +15,7 @@ COPY src ./src
 # Build TypeScript
 RUN npm run build
 
-# Remove dev dependencies (optional, saves space)
+# Remove dev dependencies after build
 RUN npm prune --production
 
 # Expose port

@@ -3,8 +3,8 @@ import { fetchUserRepos, fetchLanguageStats, fetchCommitStats } from './github.s
 import { syncLeetCodeForUser } from './leetcode.service';
 import { saveLinkedInSkills } from './linkedin.service';
 import { analyzeAndPersistUser, DeveloperAnalysis } from './analysis.service';
-import { generateAndPersistAIInsights } from './ai.service';
-import { matchUserToCompanies } from './company.service';
+import { generateAndPersistAIInsights, PersistedAIInsights } from './ai.service';
+import { matchUserToCompanies, CompanyMatch } from './company.service';
 import { logger } from '../utils/logger';
 
 /**
@@ -31,7 +31,7 @@ export async function syncUserGitHub(user: IUser): Promise<void> {
       syncedAt: new Date()
     };
 
-    await (user as User).save();
+    await user.save();
     logger.info('GitHub sync completed', { userId: user._id, reposCount: repos.length });
   } catch (error) {
     logger.error('GitHub sync failed', { userId: user._id, error: error instanceof Error ? error.message : String(error) });
@@ -89,10 +89,13 @@ export async function refreshDeveloperAnalysis(user: IUser): Promise<DeveloperAn
     logger.info('Refreshing developer analysis', { userId: user._id });
 
     const analysis = await analyzeAndPersistUser(String(user._id));
+    if (!analysis) {
+      throw new Error(`Unable to generate analysis for user ${user._id}`);
+    }
 
     // Update lastSyncedAt
     user.lastSyncedAt = new Date();
-    await (user as User).save();
+    await user.save();
 
     logger.info('Developer analysis refreshed', { userId: user._id });
     return analysis;
@@ -110,16 +113,19 @@ export async function refreshAIInsights(user: IUser, role: string = 'Software En
     logger.info('Refreshing AI insights', { userId: user._id, role });
 
     // Ensure analysis exists
-    let analysis = user.analysis as DeveloperAnalysis | undefined;
+    let analysis = user.analysis as DeveloperAnalysis | undefined | null;
     if (!analysis) {
       analysis = await analyzeAndPersistUser(String(user._id));
+    }
+    if (!analysis) {
+      throw new Error(`Unable to generate analysis for user ${user._id}`);
     }
 
     await generateAndPersistAIInsights(user, analysis, role);
 
     // Update lastAISyncAt
     user.lastAISyncAt = new Date();
-    await (user as User).save();
+    await user.save();
 
     logger.info('AI insights refreshed', { userId: user._id });
   } catch (error) {
@@ -136,9 +142,12 @@ export async function refreshCompanyMatches(user: IUser): Promise<void> {
     logger.info('Refreshing company matches', { userId: user._id });
 
     // Ensure analysis exists
-    let analysis = user.analysis as DeveloperAnalysis | undefined;
+    let analysis = user.analysis as DeveloperAnalysis | undefined | null;
     if (!analysis) {
       analysis = await analyzeAndPersistUser(String(user._id));
+    }
+    if (!analysis) {
+      throw new Error(`Unable to generate analysis for user ${user._id}`);
     }
 
     // Compute matches (this doesn't persist, but we update timestamp to indicate we ran it)
@@ -146,7 +155,7 @@ export async function refreshCompanyMatches(user: IUser): Promise<void> {
 
     // Update lastCompanyMatchSyncAt
     user.lastCompanyMatchSyncAt = new Date();
-    await (user as User).save();
+    await user.save();
 
     logger.info('Company matches refreshed', { userId: user._id });
   } catch (error) {
@@ -158,12 +167,15 @@ export async function refreshCompanyMatches(user: IUser): Promise<void> {
 /**
  * Full sync pipeline for a user: syncs all data sources, refreshes analysis, AI insights, and company matches
  */
-export async function runFullSyncForUser(userId: string, role: string = 'Software Engineer'): Promise<{
+export async function runFullSyncForUser(
+  userId: string,
+  role: string = 'Software Engineer'
+): Promise<{
   analysis: DeveloperAnalysis;
-  aiInsights: any;
-  companyMatches: any[];
+  aiInsights: PersistedAIInsights | null;
+  companyMatches: CompanyMatch[];
 }> {
-  const user = await User.findById(userId) as IUser | null;
+  const user = (await User.findById(userId)) as IUser | null;
   if (!user) {
     throw new Error(`User not found: ${userId}`);
   }
@@ -184,8 +196,8 @@ export async function runFullSyncForUser(userId: string, role: string = 'Softwar
     await refreshCompanyMatches(user);
 
     // Reload user to get latest AI insights
-    const updatedUser = await User.findById(userId) as IUser | null;
-    const aiInsights = updatedUser?.aiInsights || null;
+    const updatedUser = (await User.findById(userId)) as IUser | null;
+    const aiInsights = (updatedUser?.aiInsights as PersistedAIInsights | undefined) ?? null;
 
     // Get company matches
     const companyMatches = await matchUserToCompanies(userId, analysis);

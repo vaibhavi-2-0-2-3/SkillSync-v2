@@ -25,7 +25,7 @@ GET /api/auth/github/url
 GET /api/auth/github/callback?code=...
 ```
 
-**Response:** Redirects to `GITHUB_DEFAULT_REDIRECT_URL` with query params:
+**Response:** Redirects to the configured `githubDefaultRedirectUrl` (typically your frontend URL) with query params:
 - `userId`: MongoDB user ID
 - `githubUsername`: GitHub username
 
